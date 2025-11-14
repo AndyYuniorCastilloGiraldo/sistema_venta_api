@@ -1,22 +1,15 @@
 package com.proyecto1.TiendaProyecto.Controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-
 import com.proyecto1.TiendaProyecto.Model.Pedido;
 import com.proyecto1.TiendaProyecto.Service.PedidoService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
-
-
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -26,51 +19,59 @@ public class PedidoController {
     private PedidoService service;
 
     @PostMapping
-    public ResponseEntity<Pedido> crearPedido(@RequestBody Pedido pedido) {
-        Pedido nuevoPedido = service.crearPedido(pedido);
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<?> crearPedido(@RequestBody Pedido pedido, Authentication auth) {
+        String username = auth.getName();
+        Pedido nuevoPedido = service.crearPedido(pedido, username);
         return ResponseEntity.ok(nuevoPedido);
     }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarPedido(@PathVariable Long id, @RequestBody Pedido pedidoActualizado) {
-        Pedido pedidoExistente = service.obtenerPedidoPorId(id);
-        if (pedidoExistente != null) {
-            pedidoExistente.setTotal(pedidoActualizado.getTotal());
-            pedidoExistente.setEstado(pedidoActualizado.getEstado());
 
-            Pedido pedidoGuardado = service.actualizarPedido(id, pedidoExistente);
-            return ResponseEntity.ok("Pedido actualizado: " + pedidoGuardado);
-        } else {
-            String mensaje = "No hay pedido con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
-        }
+    @GetMapping("/mis-pedidos")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<?> obtenerMisPedidos(Authentication auth) {
+        String username = auth.getName();
+        List<Pedido> pedidos = service.obtenerPedidosPorUsuario(username);
+        return ResponseEntity.ok(pedidos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPedidoPorId(@PathVariable Long id) {
-        Pedido pedido = service.obtenerPedidoPorId(id);
-        if (pedido != null) {
-            return ResponseEntity.ok(pedido);
-        } else {
-            String mensaje = "No hay pedido con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<?> obtenerPedidoPorId(@PathVariable Long id, Authentication auth) {
+        String username = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        
+        Pedido pedido = service.buscarPedidoPorId(id);
+        
+        if (!isAdmin && !pedido.getUsuario().getUsername().equals(username)) {
+            return ResponseEntity.status(403)
+                .body("No tienes permiso para ver este pedido");
         }
+        
+        return ResponseEntity.ok(pedido);
     }
 
     @GetMapping
-    public ResponseEntity<?> obtenerPedidos(@RequestParam(required = false) Long id) {
-        return ResponseEntity.ok(service.obtenerTodosLosPedidos());
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> obtenerTodosLosPedidos() {
+        List<Pedido> pedidos = service.obtenerTodosLosPedidos();
+        return ResponseEntity.ok(pedidos);
+    }
+
+    @PutMapping("/{id}/estado")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarEstadoPedido(
+            @PathVariable Long id, 
+            @RequestBody Map<String, String> request) {
+        String nuevoEstado = request.get("estado");
+        Pedido pedido = service.actualizarEstado(id, nuevoEstado);
+        return ResponseEntity.ok(pedido);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminarPedido(@PathVariable Long id) {
-        boolean eliminado = service.eliminarPedido(id);
-        if (eliminado) {
-            return ResponseEntity.ok("Pedido con ID " + id + " eliminado correctamente.");
-        } else {
-            String mensaje = "No hay pedido con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
-        }
+        service.eliminarPedido(id);
+        return ResponseEntity.ok("Pedido eliminado exitosamente");
     }
-    
 }

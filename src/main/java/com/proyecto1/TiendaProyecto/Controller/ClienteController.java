@@ -3,6 +3,7 @@ package com.proyecto1.TiendaProyecto.Controller;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,25 +17,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
-
-
-
-
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
-    
+
     @Autowired
     private ClienteService service;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> crearCliente(@RequestBody Cliente cliente) {
         Cliente nuevoCliente = service.guardarCliente(cliente);
         return ResponseEntity.ok(nuevoCliente);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<?> obtenerClientePorId(@PathVariable Long id) {
         Cliente cliente = service.buscarClientePorId(id);
         if (cliente != null) {
@@ -45,8 +43,8 @@ public class ClienteController {
         }
     }
 
-
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> actualizarCliente(@PathVariable Long id, @RequestBody Cliente clienteActualizado) {
         Cliente clienteExistente = service.buscarClientePorId(id);
         if (clienteExistente != null) {
@@ -65,17 +63,14 @@ public class ClienteController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> obtenerTodosLosClientes() {
         List<Cliente> clientes = service.buscarTodosLosClientes();
-        if (!clientes.isEmpty()) {
-            return ResponseEntity.ok(clientes);
-        } else {
-            String mensaje = "No hay clientes registrados.";
-            return ResponseEntity.status(404).body(mensaje);
-        }
+        return ResponseEntity.ok(clientes);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminarCliente(@PathVariable Long id) {
         boolean eliminado = service.eliminarCliente(id);
         if (eliminado) {

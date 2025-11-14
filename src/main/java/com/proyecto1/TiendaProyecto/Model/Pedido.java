@@ -40,6 +40,10 @@ public class Pedido {
     @ManyToOne
     @JoinColumn(name = "clienteId")
     private Cliente cliente;
+    
+    @ManyToOne
+    @JoinColumn(name = "usuarioId")
+    private Usuario usuario;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

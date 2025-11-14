@@ -6,4 +6,5 @@ import com.proyecto1.TiendaProyecto.Model.DetallePedido;
 public interface DetallePedidoService {
     DetallePedido listarDetallePedidoPorId(Long id);
     List<DetallePedido> listarTodosLosDetallePedidos();
+    List<DetallePedido> listarDetallesPorPedido(Long pedidoId);
 }

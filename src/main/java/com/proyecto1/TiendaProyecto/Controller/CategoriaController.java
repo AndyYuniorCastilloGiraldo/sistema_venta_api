@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,12 +30,14 @@ public class CategoriaController {
     private CategoriaService service;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
         Categoria nuevaCategoria = service.agregarCategoria(categoria);
         return ResponseEntity.ok(nuevaCategoria);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> actualizarCategoria(@PathVariable Long id, @RequestBody Categoria categoriaActualizada) {
         Categoria categoriaExistente = service.obtenerCategoriaPorId(id);
         if (categoriaExistente != null) {
@@ -48,12 +51,14 @@ public class CategoriaController {
         }
     }
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Categoria>> obtenerTodasLasCategorias() {
         List<Categoria> categorias = service.obtenerTodasLasCategorias();
         return ResponseEntity.ok(categorias);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<?> obtenerCategoriaPorId(@PathVariable Long id) {
         Categoria categoria = service.obtenerCategoriaPorId(id);
         if (categoria != null) {
@@ -65,6 +70,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/nombre")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<?> obtenerCategoriaPorNombre(@RequestParam String nombre) {
         Categoria categoria = service.obtenerCategoriaPorNombre(nombre);
         if (categoria != null) {
@@ -74,7 +80,9 @@ public class CategoriaController {
             return ResponseEntity.status(404).body(mensaje);
         }
     }
+    
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
         Boolean eliminado = service.eliminarCategoria(id);
         if (eliminado) {

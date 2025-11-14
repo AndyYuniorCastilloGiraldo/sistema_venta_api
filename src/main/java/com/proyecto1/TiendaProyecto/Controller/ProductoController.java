@@ -2,6 +2,7 @@ package com.proyecto1.TiendaProyecto.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +28,14 @@ public class ProductoController {
 
 
    @PostMapping
+   @PreAuthorize("hasRole('ADMIN')")
    public ResponseEntity<?> agregarProducto(@RequestBody Producto producto) {
        Producto nuevoProducto = service.agregarProducto(producto);
        return ResponseEntity.ok(nuevoProducto);
    }
 
    @GetMapping("/{id}")
+   @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
    public ResponseEntity<?> obtenerProductoPorId(@PathVariable Long id) {
        Producto producto = service.obtenerProductoPorId(id);
        if (producto != null) {
@@ -44,6 +47,7 @@ public class ProductoController {
    }
 
    @GetMapping("/nombre")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
    public ResponseEntity<?> obtenerProductoPorNombre(@RequestParam String nombre) {
        Producto producto = service.obtenerProductoPorNombre(nombre);
        if (producto != null) {
@@ -55,11 +59,13 @@ public class ProductoController {
    }
    
    @GetMapping
+   @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
    public ResponseEntity<?> obtenerProductos(@RequestParam(required = false) String nombre) {
        return ResponseEntity.ok(service.obtenerTodosLosProductos());
    }
    
    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
    public ResponseEntity<?> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
        Producto productoActualizado = service.actualizarProducto(id, producto);
        if (productoActualizado != null) {
@@ -71,6 +77,7 @@ public class ProductoController {
    }
 
    @DeleteMapping("/{id}")
+   @PreAuthorize("hasRole('ADMIN')")
    public ResponseEntity<?> eliminarProducto(@PathVariable Long id) {
        Boolean eliminado = service.eliminarProducto(id);
        if (eliminado) {

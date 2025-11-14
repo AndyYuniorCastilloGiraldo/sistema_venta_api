@@ -2,6 +2,8 @@ package com.proyecto1.TiendaProyecto.Model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,6 +38,7 @@ public class Proveedor {
     private String direccion;
 
     @OneToMany(mappedBy = "proveedor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Producto> productos;
 
 }
