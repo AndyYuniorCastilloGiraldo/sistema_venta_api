@@ -28,6 +28,7 @@ Incluye autenticación **JWT**, arquitectura en capas, validaciones, manejo de e
 - **Postman**
 - **Git / GitHub**
 
-Enlaces
+## AUTOR
+Castillo Giraldo Andy
 LinkedIn: [Andy Castillo Giraldo](https://www.linkedin.com/in/andy-castillo-giraldo-248ba7351/)
 
