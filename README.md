@@ -31,6 +31,7 @@ Incluye autenticación **JWT**, arquitectura en capas, validaciones, manejo de e
 ## AUTOR
 Castillo Giraldo Andy
 
-##Enlace
+##Enlace 
+
 LinkedIn: [Andy Castillo Giraldo](https://www.linkedin.com/in/andy-castillo-giraldo-248ba7351/)
 
