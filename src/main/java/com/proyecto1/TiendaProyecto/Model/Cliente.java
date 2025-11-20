@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "cliente")
 public class Cliente {
 
+    //maso menos los atributos que tendria un cliente
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "clienteId")
