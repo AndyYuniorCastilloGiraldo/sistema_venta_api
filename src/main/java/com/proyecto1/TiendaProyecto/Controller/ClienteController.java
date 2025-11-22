@@ -26,59 +26,46 @@ public class ClienteController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> crearCliente(@RequestBody Cliente cliente) {
-        Cliente nuevoCliente = service.guardarCliente(cliente);
-        return ResponseEntity.ok(nuevoCliente);
+    public ResponseEntity<Cliente> crearCliente(@RequestBody Cliente cliente) {
+        return ResponseEntity.ok(service.registrar(cliente));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<?> obtenerClientePorId(@PathVariable Long id) {
-        Cliente cliente = service.buscarClientePorId(id);
-        if (cliente != null) {
-            return ResponseEntity.ok(cliente);
-        } else {
-            String mensaje = "No hay cliente con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
-        }
+    public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Long id) {
+        List<Cliente> clientes = service.buscarId(id);
+        return clientes.isEmpty() ? 
+            ResponseEntity.notFound().build() : 
+            ResponseEntity.ok(clientes.get(0));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> actualizarCliente(@PathVariable Long id, @RequestBody Cliente clienteActualizado) {
-        Cliente clienteExistente = service.buscarClientePorId(id);
-        if (clienteExistente != null) {
-            clienteExistente.setNombreCliente(clienteActualizado.getNombreCliente());
-            clienteExistente.setApellidoCliente(clienteActualizado.getApellidoCliente());
-            clienteExistente.setEmail(clienteActualizado.getEmail());
-            clienteExistente.setTelefono(clienteActualizado.getTelefono());
-            clienteExistente.setDireccion(clienteActualizado.getDireccion());
+    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
+        List<Cliente> existentes = service.buscarId(id);
+        if (existentes.isEmpty()) return ResponseEntity.notFound().build();
 
-            Cliente clienteGuardado = service.guardarCliente(clienteExistente);
-            return ResponseEntity.ok(clienteGuardado);
-        } else {
-            String mensaje = "No hay cliente con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
-        }
+        Cliente c = existentes.get(0);
+        c.setNombreCliente(cliente.getNombreCliente());
+        c.setApellidoCliente(cliente.getApellidoCliente());
+        c.setEmail(cliente.getEmail());
+        c.setTelefono(cliente.getTelefono());
+        c.setDireccion(cliente.getDireccion());
+
+        return ResponseEntity.ok(service.actualizar(id, c));
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> obtenerTodosLosClientes() {
-        List<Cliente> clientes = service.buscarTodosLosClientes();
-        return ResponseEntity.ok(clientes);
+    public ResponseEntity<List<Cliente>> obtenerTodos() {
+        return ResponseEntity.ok(service.listar());
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> eliminarCliente(@PathVariable Long id) {
-        boolean eliminado = service.eliminarCliente(id);
-        if (eliminado) {
-            String mensaje = "Cliente con ID " + id + " eliminado exitosamente.";
-            return ResponseEntity.ok(mensaje);
-        } else {
-            String mensaje = "No hay cliente con el ID " + id;
-            return ResponseEntity.status(404).body(mensaje);
-        }
+    public ResponseEntity<String> eliminarCliente(@PathVariable Long id) {
+        return service.eliminar(id) ? 
+            ResponseEntity.ok("Cliente con ID " + id + " eliminado exitosamente.") :
+            ResponseEntity.status(404).body("No hay cliente con el ID " + id);
     }
 }

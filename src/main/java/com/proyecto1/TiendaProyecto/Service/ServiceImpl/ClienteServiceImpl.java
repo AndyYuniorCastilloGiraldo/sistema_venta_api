@@ -16,32 +16,48 @@ public class ClienteServiceImpl implements ClienteService {
     private ClienteRepository repo;
 
     @Override
-    public Cliente guardarCliente(Cliente cliente) {
-        return repo.save(cliente);
+    public List<Cliente> listar() {
+        return repo.listarClientes();
     }
 
     @Override
-    public Cliente buscarClientePorId(Long id) {
-        return repo.findById(id).orElse(null);
+    public Cliente registrar(Cliente cliente) {
+        return repo.registrarCliente(
+            cliente.getNombreCliente(),
+            cliente.getApellidoCliente(),
+            cliente.getEmail(),
+            cliente.getTelefono(),
+            cliente.getDireccion()
+        );
     }
 
     @Override
-    public List<Cliente> buscarTodosLosClientes() {
-        return repo.findAll();
+    public Cliente actualizar(long idCliente, Cliente cliente) {
+        return repo.actualizarCliente(
+            idCliente,
+            cliente.getNombreCliente(),
+            cliente.getApellidoCliente(),
+            cliente.getEmail(),
+            cliente.getTelefono(),
+            cliente.getDireccion()
+        );
     }
 
     @Override
-    public Cliente actualizarCliente(Cliente cliente) {
-        return repo.save(cliente);
-    }
-
-    @Override
-    public boolean eliminarCliente(Long id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
+    public boolean eliminar(Long idCliente) {
+        try {
+            repo.eliminarCliente(idCliente);
             return true;
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
+
+    @Override
+    public List<Cliente> buscarId(Long idCliente) {
+        Cliente cliente = repo.buscarPorId(idCliente);
+        return cliente != null ? List.of(cliente) : List.of();
+    }
+
     
 }
